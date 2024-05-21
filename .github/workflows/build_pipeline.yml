@@ -1,0 +1,44 @@
+name: Terraform Workflow
+on:
+  workflow_dispatch:
+    inputs:
+      manual_deploy:
+        description: 'Trigger manual deployment'
+        default: 'true'
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  Terraform_Workflow:
+    runs-on: ubuntu-latest
+    steps:
+    - id: 'auth'
+      name: 'Authenticate to GCP'
+      uses: 'google-github-actions/auth@v0.3.1'
+      with:
+          create_credentials_file: 'true'
+          workload_identity_provider: 'projects/545177491072/locations/global/workloadIdentityPools/github-test-autm-pool/providers/github-test-autm-provider'
+          service_account: 'autm-github-test-sa@coen-asil-carlin.iam.gserviceaccount.com'
+          
+    - id: 'checkout'
+      name: Checkout
+      uses: actions/checkout@v2
+      
+    - id: 'setup'
+      name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      
+    - id: 'init'
+      name: Terraform Init
+      run: terraform init
+        
+    - id: 'plan'
+      name: Terraform Plan
+      run: terraform plan
+        
+    - id: 'apply'
+      name: Terraform Apply
+      run: terraform apply -auto-approve
